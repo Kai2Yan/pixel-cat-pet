@@ -17,10 +17,11 @@ body{
   color:#e0e0e0;overflow-x:hidden;overflow-y:auto;
   transition:background 3s ease;padding:16px 8px 30px;
 }
-.bg-night{background:linear-gradient(135deg,#0a0a1a 0%,#111133 50%,#0a1628 100%);}
-.bg-dawn{background:linear-gradient(135deg,#1a1030 0%,#5a2850 40%,#8a5540 100%);}
-.bg-day{background:linear-gradient(135deg,#14304a 0%,#1a4a6a 50%,#1f5a7a 100%);}
-.bg-dusk{background:linear-gradient(135deg,#12122a 0%,#6a2018 40%,#8a5a0a 100%);}
+.bg-night{background:linear-gradient(160deg,#0b0b2a 0%,#1b1145 25%,#0e2a4a 50%,#162040 75%,#0a1628 100%);background-size:400% 400%;animation:bg-flow 20s ease infinite;}
+.bg-dawn{background:linear-gradient(160deg,#2d1b4e 0%,#8b4585 20%,#d4728a 45%,#e8956d 65%,#f0c27f 100%);background-size:400% 400%;animation:bg-flow 20s ease infinite;}
+.bg-day{background:linear-gradient(160deg,#1565a0 0%,#2196c8 20%,#64b5d6 40%,#a8d8ea 60%,#48b1e8 80%,#1a8fcf 100%);background-size:400% 400%;animation:bg-flow 20s ease infinite;}
+.bg-dusk{background:linear-gradient(160deg,#1a1a3e 0%,#6b2048 20%,#c0392b 40%,#e67e22 65%,#f39c12 85%,#2c1654 100%);background-size:400% 400%;animation:bg-flow 20s ease infinite;}
+@keyframes bg-flow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
 .stars{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;transition:opacity 3s;}
 .star{position:absolute;background:white;border-radius:50%;animation:twinkle var(--duration) ease-in-out infinite;}
@@ -54,15 +55,14 @@ body{
 .status-bar-bg{width:80px;height:8px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;border:1px solid rgba(255,255,255,.15);}
 .status-bar-fill{height:100%;border-radius:1px;transition:width .5s ease,background .5s ease;}
 
-.pet-scene{position:relative;width:400px;height:250px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;border-radius:8px;padding-bottom:6px;border:3px solid rgba(0,0,0,.4);box-shadow:0 4px 24px rgba(0,0,0,.5),inset 0 0 30px rgba(0,0,0,.1);}
-canvas#roomCanvas{position:absolute;top:0;left:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;z-index:0;}
-.pet-glow{position:absolute;bottom:-10px;left:calc(50% - 80px);width:160px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(240,194,127,.12) 0%,transparent 70%);animation:glow-pulse 3s ease-in-out infinite;z-index:1;}
-@keyframes glow-pulse{0%,100%{opacity:.4}50%{opacity:.9}}
+.pet-scene{position:relative;width:320px;height:200px;display:flex;align-items:center;justify-content:center;}
+.pet-glow{position:absolute;width:200px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(240,194,127,.12) 0%,transparent 70%);animation:glow-pulse 3s ease-in-out infinite;}
+@keyframes glow-pulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.3);opacity:1}}
 
-.pixel-cat-wrapper{position:relative;cursor:pointer;user-select:none;z-index:2;}
-canvas#catCanvas{image-rendering:pixelated;image-rendering:crisp-edges;width:160px;height:100px;transition:transform .3s ease;}
+.pixel-cat-wrapper{position:relative;cursor:pointer;user-select:none;}
+canvas#catCanvas{image-rendering:pixelated;image-rendering:crisp-edges;width:288px;height:180px;transition:transform .3s ease;}
 
-.thought-bubble{position:absolute;top:-36px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.95);color:#333;padding:6px 10px;border-radius:4px;font-size:12px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.2);border:2px solid #333;font-family:'Courier New',monospace;z-index:20;}
+.thought-bubble{position:absolute;top:-40px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.95);color:#333;padding:8px 14px;border-radius:4px;font-size:14px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.2);border:2px solid #333;font-family:'Courier New',monospace;z-index:20;}
 .thought-bubble.show{opacity:1;transform:translateX(-50%) translateY(-8px);}
 .thought-bubble::after{content:'';position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #333;}
 
@@ -83,22 +83,15 @@ canvas#catCanvas{image-rendering:pixelated;image-rendering:crisp-edges;width:160
 
 .mood-text{font-size:13px;color:#999;text-align:center;min-height:18px;font-family:'Courier New',monospace;}
 
-.float-emoji{position:absolute;font-size:18px;pointer-events:none;animation:float-up 1.5s ease-out forwards;z-index:10;}
+.float-emoji{position:absolute;font-size:24px;pointer-events:none;animation:float-up 1.5s ease-out forwards;z-index:10;}
 @keyframes float-up{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-80px) scale(1.5)}}
-.zzz{position:absolute;font-size:16px;color:#b8a9c9;font-family:'Courier New',monospace;font-weight:bold;animation:zzz-float 2s ease-in-out infinite;opacity:0;}
-@keyframes zzz-float{0%{opacity:0;transform:translate(0,0) rotate(0)}30%{opacity:1}100%{opacity:0;transform:translate(20px,-35px) rotate(20deg)}}
+.zzz{position:absolute;font-size:20px;color:#b8a9c9;font-family:'Courier New',monospace;font-weight:bold;animation:zzz-float 2s ease-in-out infinite;opacity:0;}
+@keyframes zzz-float{0%{opacity:0;transform:translate(0,0) rotate(0)}30%{opacity:1}100%{opacity:0;transform:translate(30px,-50px) rotate(20deg)}}
 .bounce{animation:bounce .5s ease;}
-@keyframes bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-12px)}60%{transform:translateY(-4px)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}30%{transform:translateY(-20px)}60%{transform:translateY(-8px)}}
 .wiggle{animation:wiggle .5s ease;}
 @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
-.ground{display:none;}
-
-.room-tabs{display:flex;gap:0;justify-content:center;}
-.room-tab{padding:7px 18px;border:2px solid rgba(255,255,255,.15);font-size:13px;cursor:pointer;font-family:'Courier New',monospace;background:rgba(255,255,255,.05);color:#999;transition:all .2s;border-bottom:none;}
-.room-tab:first-child{border-radius:6px 0 0 0;}
-.room-tab:last-child{border-radius:0 6px 0 0;}
-.room-tab.active{background:rgba(240,194,127,.15);color:#f0c27f;border-color:rgba(240,194,127,.3);}
-.room-tab:hover{background:rgba(255,255,255,.1);}
+.ground{width:260px;height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:-8px;}
 
 /* Modals */
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
@@ -166,14 +159,13 @@ canvas#gameCanvas{border:2px solid rgba(255,255,255,.2);border-radius:4px;backgr
 .acc-btn.locked{opacity:.3;cursor:not-allowed;}
 
 /* Mobile */
-@media(max-width:440px){
+@media(max-width:420px){
   .pet-name{font-size:20px;}
-  canvas#catCanvas{width:128px;height:80px;}
-  .pet-scene{width:320px;height:200px;}
+  canvas#catCanvas{width:240px;height:150px;}
+  .pet-scene{width:280px;height:170px;}
   .action-btn{padding:7px 10px;font-size:12px;}
   .status-bar-bg{width:65px;}
   .status-item{min-width:65px;}
-  .room-tab{padding:5px 12px;font-size:12px;}
 }
 </style>
 </head>
@@ -203,12 +195,7 @@ canvas#gameCanvas{border:2px solid rgba(255,255,255,.2);border-radius:4px;backgr
     <div class="status-item"><span class="status-label">❤️ 亲密</span><div class="status-bar-bg"><div class="status-bar-fill" id="loveBar" style="width:30%;background:linear-gradient(90deg,#f7c5c5,#ffb3b3)"></div></div></div>
   </div>
 
-  <div class="room-tabs">
-    <button class="room-tab active" id="roomTabLiving" onclick="switchRoom('living')">🛋️ 客厅</button>
-    <button class="room-tab" id="roomTabBedroom" onclick="switchRoom('bedroom')">🛏️ 卧室</button>
-  </div>
   <div class="pet-scene" id="petScene">
-    <canvas id="roomCanvas" width="80" height="50"></canvas>
     <div class="pet-glow"></div>
     <div class="pixel-cat-wrapper" id="petBody" onclick="petClick()">
       <canvas id="catCanvas" width="32" height="20"></canvas>
@@ -381,180 +368,6 @@ function drawHalo(){
 
 const accessoryDrawFns={crown:drawCrown,bowtie:drawBowTie,glasses:drawGlasses,scarf:drawScarf,partyhat:drawPartyHat,wizardhat:drawWizardHat,flower:drawFlower,halo:drawHalo};
 
-// ===================== ROOM SYSTEM =====================
-const roomCanvas=document.getElementById('roomCanvas');
-const rCtx=roomCanvas.getContext('2d');
-const RW=80,RH=50;
-
-function rpx(x,y,c){if(x<0||y<0||x>=RW||y>=RH)return;rCtx.fillStyle=c;rCtx.fillRect(x,y,1,1);}
-function rRect(x1,y1,x2,y2,c){rCtx.fillStyle=c;rCtx.fillRect(x1,y1,x2-x1+1,y2-y1+1);}
-function rhL(x1,x2,y,c){for(let x=x1;x<=x2;x++)rpx(x,y,c);}
-
-function drawRoomWindow(x1,y1,x2,y2,isDark,curtainColor){
-  rRect(x1,y1,x2,y2,'#ffffff');
-  const gx1=x1+1,gy1=y1+1,gx2=x2-1,gy2=y2-1;
-  rRect(gx1,gy1,gx2,gy2,isDark?'#0f1135':'#87ceeb');
-  const mx=Math.floor((x1+x2)/2);
-  rRect(mx,gy1,mx,gy2,'#ffffff');
-  rRect(gx1,Math.floor((y1+y2)/2),gx2,Math.floor((y1+y2)/2),'#ffffff');
-  rRect(gx1,gy1,gx1+2,gy2,curtainColor);
-  rRect(gx2-2,gy1,gx2,gy2,curtainColor);
-  if(isDark){
-    rpx(gx1+4,gy1+2,'#ffd700');rpx(gx2-4,gy1+4,'#fff');rpx(gx1+5,gy2-3,'#fff');
-    rRect(gx2-5,gy1+1,gx2-3,gy1+3,'#ffeaa7');
-  }else{
-    rRect(gx1+4,gy1+3,gx1+7,gy1+4,'#ffffff');
-    rpx(gx2-5,gy1+2,'#ffd700');
-  }
-}
-
-function drawFloorAndWall(wallColor){
-  rRect(0,0,79,32,wallColor);
-  rRect(0,33,79,49,'#a0784c');
-  for(let y=33;y<50;y+=3){rhL(0,79,y,'#8b6914');}
-  rRect(0,31,79,32,'#6b4c12');
-}
-
-function drawLivingRoom(isDark){
-  rCtx.clearRect(0,0,RW,RH);
-  drawFloorAndWall('#e8d5b7');
-  drawRoomWindow(4,3,22,20,isDark,'#c0392b');
-
-  // Picture frame
-  rRect(34,4,46,14,'#8b6914');
-  rRect(35,5,45,13,'#87ceeb');
-  rRect(35,10,45,13,'#27ae60');
-  rRect(38,11,42,13,'#2ecc71');
-  rpx(37,7,'#f1c40f');rpx(38,7,'#f1c40f');
-
-  // Clock
-  rRect(55,4,60,9,'#ddd');
-  rRect(56,5,59,8,'#fff');
-  rpx(57,5,'#333');rpx(58,7,'#333');rpx(57,6,'#333');rpx(57,7,'#e74c3c');
-
-  // Sofa
-  rRect(22,22,60,31,'#1e8c5a');
-  rRect(24,24,58,31,'#27ae60');
-  rRect(24,27,58,31,'#2ecc71');
-  rRect(20,22,23,31,'#1a7a4e');
-  rRect(58,22,61,31,'#1a7a4e');
-  rRect(28,23,36,26,'#33d97f');
-  rRect(46,23,54,26,'#33d97f');
-  rpx(22,31,'#6b4c12');rpx(23,31,'#6b4c12');rpx(59,31,'#6b4c12');rpx(60,31,'#6b4c12');
-
-  // TV + stand
-  rRect(65,24,77,31,'#6b4c12');
-  rRect(64,9,78,24,'#333');
-  rRect(65,10,77,23,'#2c3e50');
-  // Heart on TV
-  rpx(69,14,'#e74c3c');rpx(73,14,'#e74c3c');
-  rRect(68,15,70,16,'#e74c3c');rRect(72,15,74,16,'#e74c3c');
-  rRect(69,16,73,17,'#e74c3c');rRect(70,18,72,18,'#e74c3c');rpx(71,19,'#e74c3c');
-
-  // Plant
-  rRect(2,28,6,31,'#8b4513');
-  rRect(1,27,7,28,'#8b4513');
-  rRect(2,25,6,28,'#27ae60');
-  rpx(1,24,'#2ecc71');rpx(4,23,'#27ae60');rpx(7,24,'#2ecc71');
-  rpx(3,24,'#33d97f');rpx(5,24,'#33d97f');
-
-  // Rug
-  rRect(26,37,56,45,'#c0392b');
-  rRect(27,38,55,44,'#e74c3c');
-  rRect(30,40,52,42,'#f39c12');
-  rRect(32,41,50,41,'#ffd700');
-
-  // Cat bowl
-  rRect(68,44,74,46,'#bdc3c7');
-  rRect(69,43,73,44,'#d5d8dc');
-  rRect(70,44,72,45,'#f0a050');
-
-  // Bookshelf
-  rRect(63,4,66,8,'#6b4c12');
-  rRect(63,4,66,4,'#8b6914');
-  rRect(64,5,65,5,'#3498db');rpx(64,6,'#e74c3c');rpx(65,6,'#2ecc71');
-  rpx(64,7,'#f39c12');rpx(65,7,'#9b59b6');
-}
-
-function drawBedroom(isDark){
-  rCtx.clearRect(0,0,RW,RH);
-  drawFloorAndWall('#d5c8e8');
-  drawRoomWindow(4,3,22,20,isDark,'#5dade2');
-
-  // Wardrobe
-  rRect(25,8,34,31,'#8b6914');
-  rRect(25,8,34,9,'#6b4c12');
-  rRect(26,10,29,30,'#a0784c');
-  rRect(30,10,33,30,'#9a7040');
-  rpx(29,20,'#daa520');rpx(30,20,'#daa520');
-
-  // Bed
-  rRect(42,20,77,33,'#6b4c12');
-  rRect(75,14,77,33,'#8b4513');
-  rRect(76,14,77,14,'#a0784c');
-  rRect(43,21,76,32,'#ffffff');
-  rRect(43,23,76,30,'#5dade2');
-  rRect(43,23,76,25,'#3498db');
-  rRect(71,18,75,22,'#fff8f0');
-  rRect(72,19,74,21,'#f0e6d6');
-  // Blanket fold detail
-  rRect(50,24,60,25,'#2e86c1');
-
-  // Nightstand
-  rRect(36,25,41,31,'#8b6914');
-  rRect(37,26,40,30,'#a0784c');
-
-  // Lamp
-  rRect(37,20,40,25,'#bdc3c7');
-  rRect(36,18,41,20,'#f7dc6f');
-  rpx(38,17,'#f9e84e');rpx(39,17,'#f9e84e');
-  if(isDark){
-    rCtx.fillStyle='rgba(247,220,111,0.15)';
-    rCtx.fillRect(33,16,12,16);
-  }
-
-  // Moon/star wall art
-  rRect(50,5,61,13,'#6b4c12');
-  rRect(51,6,60,12,'#1a1a3e');
-  rpx(53,8,'#ffd700');rpx(57,7,'#ffd700');rpx(55,10,'#fff');
-  rRect(56,8,58,10,'#ffeaa7');
-
-  // Alarm clock
-  rRect(37,23,39,25,'#e74c3c');
-  rpx(38,22,'#e74c3c');
-  rpx(38,24,'#fff');
-
-  // Rug
-  rRect(38,37,70,45,'#8e44ad');
-  rRect(39,38,69,44,'#9b59b6');
-  rRect(43,40,65,42,'#d5c8e8');
-  rRect(46,41,62,41,'#e8d5f0');
-
-  // Slippers
-  rRect(38,46,41,48,'#fd79a8');
-  rRect(43,46,46,48,'#fd79a8');
-
-  // Teddy bear on bed
-  rRect(47,19,50,22,'#d4a052');
-  rpx(47,18,'#d4a052');rpx(50,18,'#d4a052');
-  rpx(48,20,'#333');rpx(49,20,'#333');
-  rpx(48,21,'#e06080');
-}
-
-function renderRoom(){
-  const h=new Date().getHours();
-  const isDark=h<6||h>=19;
-  if(state.currentRoom==='bedroom')drawBedroom(isDark);
-  else drawLivingRoom(isDark);
-}
-
-function switchRoom(room){
-  state.currentRoom=room;
-  document.getElementById('roomTabLiving').classList.toggle('active',room==='living');
-  document.getElementById('roomTabBedroom').classList.toggle('active',room==='bedroom');
-  renderRoom();saveState();
-}
-
 // ===================== GAME STATE =====================
 const defaultState={
   hunger:80,happy:70,energy:90,love:30,
@@ -569,7 +382,6 @@ const defaultState={
   weather:'sunny',
   streak:1,lastVisit:null,
   createdAt:null,
-  currentRoom:'living',
 };
 
 let state;
@@ -933,8 +745,7 @@ function sleep(){doAction(()=>{
   }
   state.sleeping=true;state.energy=clamp(state.energy+30);state.exp+=2;state.sleepCount++;
   currentExpression='sleepy';showThought('晚安喵...💤');setMood('猫咪蜷成一团，呼呼大睡~ zzZ...');startZzz();
-  switchRoom('bedroom');
-  addDiary('💤 猫咪回到卧室睡着了，呼呼~');playPurr();
+  addDiary('💤 猫咪睡着了，呼呼~');playPurr();
 });}
 
 let zzzInterval;
@@ -984,7 +795,6 @@ function updateTimeOfDay(){
   const stars=document.getElementById('stars');
   stars.style.opacity=(period==='night'||period==='dusk')?'1':'0.2';
   document.getElementById('sunRays').style.display=(period==='day')?'block':'none';
-  renderRoom();
 }
 
 // ===================== WEATHER SYSTEM =====================
@@ -1182,8 +992,7 @@ createStars();
 updateBars();updateExpression();updateCoins();updateStreak();updateTimeOfDay();
 setWeather(state.weather||'sunny');
 renderAccessoryBar();
-switchRoom(state.currentRoom||'living');
-renderRoom();renderCat();
+renderCat();
 if(state.soundOn)document.getElementById('soundBtn').textContent='🔊 音效';
 if(state.sleeping)startZzz();
 
