@@ -60,7 +60,34 @@ body{
 @keyframes glow-pulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.3);opacity:1}}
 
 .pixel-cat-wrapper{position:relative;cursor:pointer;user-select:none;}
-canvas#catCanvas{image-rendering:pixelated;image-rendering:crisp-edges;width:288px;height:180px;transition:transform .3s ease;}
+.cat-img-container{position:relative;width:200px;height:180px;display:flex;align-items:center;justify-content:center;}
+#catImg{max-width:100%;max-height:100%;object-fit:contain;transition:opacity .35s ease;image-rendering:auto;}
+
+@keyframes cat-breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes cat-bounce{0%{transform:scale(1)}30%{transform:scale(1.1)}60%{transform:scale(.95)}100%{transform:scale(1)}}
+@keyframes cat-wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-4deg)}40%{transform:rotate(4deg)}60%{transform:rotate(-3deg)}80%{transform:rotate(2deg)}}
+@keyframes cat-sleep{0%,100%{transform:scaleY(1) translateY(0)}50%{transform:scaleY(1.02) translateY(2px)}}
+@keyframes cat-eat-nod{0%,100%{transform:rotate(0)}50%{transform:rotate(-6deg) translateY(3px)}}
+@keyframes cat-code-type{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes term-blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes term-slide{0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+
+.cat-state-normal #catImg{animation:cat-breathe 3s ease-in-out infinite;}
+.cat-state-happy #catImg{animation:cat-bounce .5s ease;}
+.cat-state-love #catImg{animation:cat-wiggle .5s ease;}
+.cat-state-sleep #catImg{animation:cat-sleep 2.5s ease-in-out infinite;}
+.cat-state-eat #catImg{animation:cat-eat-nod .6s ease 3;}
+.cat-state-play #catImg{animation:cat-wiggle .6s ease 2;}
+.cat-state-sad #catImg{filter:saturate(.85) brightness(.95);animation:cat-breathe 4s ease-in-out infinite;}
+.cat-state-code #catImg{animation:cat-code-type .4s ease 4;}
+
+.terminal-overlay{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1);width:110px;background:rgba(10,22,40,.92);border-radius:6px;border:2px solid rgba(100,200,255,.4);box-shadow:0 0 20px rgba(0,150,255,.25);z-index:10;overflow:hidden;font-family:'Courier New',monospace;}
+.cat-state-code .terminal-overlay{display:block;animation:term-slide .3s ease-out;}
+.term-header{background:rgba(50,80,120,.6);color:rgba(150,200,255,.8);font-size:8px;padding:2px 6px;text-align:center;}
+.term-body{padding:5px 7px;color:#4fc3f7;font-size:9px;line-height:1.5;min-height:45px;}
+.term-body .cursor{animation:term-blink 1s step-end infinite;}
+
+.cat-accessory-overlay{position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:28px;z-index:5;display:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));pointer-events:none;}
 
 .thought-bubble{position:absolute;top:-40px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.95);color:#333;padding:8px 14px;border-radius:4px;font-size:14px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.2);border:2px solid #333;font-family:'Courier New',monospace;z-index:20;}
 .thought-bubble.show{opacity:1;transform:translateX(-50%) translateY(-8px);}
@@ -161,7 +188,7 @@ canvas#gameCanvas{border:2px solid rgba(255,255,255,.2);border-radius:4px;backgr
 /* Mobile */
 @media(max-width:420px){
   .pet-name{font-size:20px;}
-  canvas#catCanvas{width:240px;height:150px;}
+  .cat-img-container{width:170px;height:150px;}
   .pet-scene{width:280px;height:170px;}
   .action-btn{padding:7px 10px;font-size:12px;}
   .status-bar-bg{width:65px;}
@@ -198,7 +225,14 @@ canvas#gameCanvas{border:2px solid rgba(255,255,255,.2);border-radius:4px;backgr
   <div class="pet-scene" id="petScene">
     <div class="pet-glow"></div>
     <div class="pixel-cat-wrapper" id="petBody" onclick="petClick()">
-      <canvas id="catCanvas" width="32" height="20"></canvas>
+      <div class="cat-img-container" id="catContainer">
+        <img id="catImg" src="cat_normal.png" alt="cat">
+        <div class="cat-accessory-overlay" id="catAccessory"></div>
+        <div class="terminal-overlay" id="terminalOverlay">
+          <div class="term-header">~ terminal</div>
+          <div class="term-body" id="termBody"></div>
+        </div>
+      </div>
       <div class="thought-bubble" id="thought"></div>
     </div>
   </div>
@@ -266,107 +300,17 @@ canvas#gameCanvas{border:2px solid rgba(255,255,255,.2);border-radius:4px;backgr
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-// ===================== CANVAS & PIXEL ART =====================
-const CW=32,CH=20;
-const canvas=document.getElementById('catCanvas');
-const ctx=canvas.getContext('2d');
-const P={o:'#2b2b2b',f:'#f0a050',l:'#f8c878',d:'#c88030',w:'#fff8f0',p:'#ffb0c0',n:'#e06080',e:'#2b2b2b',s:'#ffffff',b:'#ff8888',k:'#888888'};
+// ===================== CAT IMAGE SYSTEM =====================
+const catImgEl=document.getElementById('catImg');
+const catContainer=document.getElementById('catContainer');
+const termBody=document.getElementById('termBody');
+const catAccEl=document.getElementById('catAccessory');
+const catImages={normal:'cat_normal.png',sleep:'cat_sleep.png',eat:'cat_eat.png',play:'cat_play.png'};
+const termLines=['$ git commit -m "喵"','print("hello 喵!")','import 小鱼干','0 errors ✓','$ npm run 撸猫','> compiling 鱼.js...','cat README.md 🐱','sudo apt install 猫粮'];
+new Image().src=catImages.sleep;new Image().src=catImages.eat;new Image().src=catImages.play;
 
-function px(x,y,c){if(x<0||y<0||x>=CW||y>=CH)return;ctx.fillStyle=c;ctx.fillRect(x,y,1,1);}
-function fRect(x1,y1,x2,y2,c){ctx.fillStyle=c;ctx.fillRect(x1,y1,x2-x1+1,y2-y1+1);}
-function hL(x1,x2,y,c){for(let x=x1;x<=x2;x++)px(x,y,c);}
-function vL(x,y1,y2,c){for(let y=y1;y<=y2;y++)px(x,y,c);}
+// (old canvas drawing functions removed — using images now)
 
-function drawStandingBase(){
-  const{o,f,l,d,w,p,k}=P;
-  fRect(4,4,11,9,f);hL(4,11,4,l);
-  fRect(11,5,24,10,f);fRect(16,8,21,10,w);
-  hL(4,11,3,o);vL(3,4,9,o);px(4,10,o);hL(5,9,10,o);
-  hL(12,25,4,o);vL(25,5,10,o);hL(10,25,11,o);
-  px(5,1,o);px(6,1,o);px(4,2,o);px(5,2,f);px(6,2,f);px(7,2,o);px(5,3,f);px(6,3,p);
-  px(9,1,o);px(10,1,o);px(8,2,o);px(9,2,f);px(10,2,f);px(11,2,o);px(9,3,p);px(10,3,f);
-  px(6,4,d);px(8,4,d);px(10,4,d);px(7,5,d);px(9,5,d);
-  [[11,12],[14,12],[20,12],[23,12]].forEach(([lx,ly])=>{
-    fRect(lx,ly,lx+1,ly+2,f);fRect(lx,ly+3,lx+1,ly+3,w);fRect(lx,ly+4,lx+1,ly+4,o);
-  });
-  px(1,6,k);px(2,6,k);px(1,8,k);px(2,8,k);
-}
-
-function drawTail(frame){
-  const{o,f}=P;
-  if(frame%2===0){px(25,4,f);px(26,3,o);px(26,4,f);px(27,2,o);px(27,3,f);px(28,1,o);px(28,2,f);px(29,0,o);px(29,1,f);}
-  else{px(26,4,o);px(26,5,f);px(27,3,o);px(27,4,f);px(28,2,o);px(28,3,f);px(29,1,o);px(29,2,f);px(30,1,o);}
-}
-
-function drawNose(){px(7,7,P.n);px(8,7,P.n);}
-function drawEyesNormal(){const{e,s}=P;px(5,5,e);px(6,5,e);px(5,6,e);px(6,6,e);px(6,5,s);px(9,5,e);px(10,5,e);px(9,6,e);px(10,6,e);px(10,5,s);}
-function drawEyesHappy(){const{e}=P;px(5,6,e);px(6,6,e);px(4,5,e);px(7,5,e);px(9,6,e);px(10,6,e);px(8,5,e);px(11,5,e);}
-function drawEyesSad(){const{e,s}=P;px(5,5,e);px(6,5,e);px(5,6,e);px(6,6,e);px(5,7,e);px(6,7,e);px(6,5,s);px(9,5,e);px(10,5,e);px(9,6,e);px(10,6,e);px(9,7,e);px(10,7,e);px(10,5,s);px(4,4,P.o);px(7,5,P.o);px(11,4,P.o);px(8,5,P.o);}
-function drawMouthNormal(){const{o}=P;px(7,8,o);px(8,8,o);px(6,9,o);px(9,9,o);}
-function drawMouthHappy(){const{o}=P;px(6,8,o);px(9,8,o);hL(6,9,9,o);}
-function drawMouthSad(){const{o}=P;hL(6,9,9,o);px(6,8,o);px(9,8,o);}
-function drawMouthEating(){const{o,n}=P;px(6,8,o);px(9,8,o);px(6,9,o);px(9,9,o);px(7,9,n);px(8,9,n);px(7,10,o);px(8,10,o);}
-function drawBlush(){const{b}=P;px(4,7,b);px(4,8,b);px(11,7,b);px(11,8,b);}
-
-function drawSleepingCat(){
-  const{o,f,l,d,w,p,n,e,k}=P;
-  hL(12,20,6,o);px(11,7,o);px(21,7,o);px(10,8,o);px(22,8,o);px(9,9,o);px(23,9,o);
-  px(9,10,o);px(23,10,o);px(9,11,o);px(23,11,o);px(9,12,o);px(23,12,o);
-  px(10,13,o);px(22,13,o);px(11,14,o);px(21,14,o);hL(12,20,15,o);
-  hL(12,20,7,f);hL(11,21,8,f);fRect(10,9,22,12,f);hL(11,21,13,f);hL(12,20,14,f);
-  fRect(12,7,16,8,l);
-  px(12,5,o);px(13,5,o);px(12,6,f);px(13,6,p);px(16,5,o);px(17,5,o);px(16,6,p);px(17,6,f);
-  px(14,7,d);px(15,7,d);
-  hL(12,13,9,e);hL(16,17,9,e);
-  px(14,10,n);px(15,10,n);px(14,11,o);px(15,11,o);
-  fRect(17,11,20,13,w);px(12,13,w);px(13,13,w);px(14,13,w);
-  px(21,14,f);px(22,13,f);px(23,12,f);px(22,14,o);px(23,13,o);px(24,12,o);px(24,11,o);px(24,10,f);
-  px(8,9,k);px(8,10,k);
-}
-
-// ===================== ACCESSORIES =====================
-function drawCrown(){
-  const g='#ffd700',G='#daa520';
-  hL(5,10,0,g);px(5,0,G);px(10,0,G);
-  px(5,-1,g);px(7,-1,g);px(8,-1,g);px(10,-1,g);
-  px(6,-2,g);px(9,-2,g);
-}
-function drawBowTie(){
-  const r='#ff3333',R='#cc0000';
-  px(16,11,r);px(17,11,R);px(18,11,r);
-  px(15,10,r);px(19,10,r);px(15,12,r);px(19,12,r);
-}
-function drawGlasses(){
-  const g='#333';
-  fRect(4,5,7,6,g);fRect(8,5,11,6,g);
-  px(5,5,'#6ec6ff');px(6,5,'#6ec6ff');px(5,6,'#6ec6ff');px(6,6,'#6ec6ff');
-  px(9,5,'#6ec6ff');px(10,5,'#6ec6ff');px(9,6,'#6ec6ff');px(10,6,'#6ec6ff');
-  px(3,5,g);px(12,5,g);px(7,5,g);px(8,5,g);
-}
-function drawScarf(){
-  const r='#e74c3c',R='#c0392b';
-  hL(10,25,11,r);hL(10,25,12,R);
-  vL(13,12,15,r);vL(14,12,14,R);
-}
-function drawPartyHat(){
-  const c1='#e74c3c',c2='#3498db',c3='#f1c40f',tip='#2ecc71';
-  hL(5,10,2,c1);hL(6,9,1,c2);hL(7,8,0,c3);px(7,-1,tip);px(8,-1,tip);
-}
-function drawWizardHat(){
-  const h='#6c3483',s='#f1c40f';
-  hL(4,11,2,h);hL(5,10,1,h);hL(6,9,0,h);hL(7,8,-1,h);px(7,-2,h);px(8,-2,h);
-  hL(4,11,2,s);px(7,-2,s);
-}
-function drawFlower(){
-  const pk='#ff69b4',yl='#ffd700';
-  px(2,2,pk);px(3,1,pk);px(4,2,pk);px(3,3,pk);px(3,2,yl);
-}
-function drawHalo(){
-  const g='#ffd700';
-  hL(5,10,-1,g);px(4,0,g);px(11,0,g);px(5,-2,g);px(10,-2,g);hL(6,9,-2,g);
-}
-
-const accessoryDrawFns={crown:drawCrown,bowtie:drawBowTie,glasses:drawGlasses,scarf:drawScarf,partyhat:drawPartyHat,wizardhat:drawWizardHat,flower:drawFlower,halo:drawHalo};
 
 // ===================== GAME STATE =====================
 const defaultState={
@@ -426,36 +370,56 @@ const thoughts={
 
 // ===================== RENDER CAT =====================
 let currentExpression='normal';
-let tailFrame=0;
 let eatingTimeout=null;
+let codeTypingInterval=null;
 
 function renderCat(){
-  ctx.clearRect(0,0,CW,CH);
+  const prev=catContainer.className;
+  let stateClass='cat-state-normal', imgSrc=catImages.normal;
   if(state.sleeping){
-    drawSleepingCat();
-    canvas.style.transform=`scaleY(${1+Math.sin(Date.now()/1000)*0.015})`;
+    stateClass='cat-state-sleep';imgSrc=catImages.sleep;
   }else{
-    canvas.style.transform='';
-    drawStandingBase();drawTail(tailFrame);drawNose();
-    if(state.activeAccessory==='glasses'){
-      drawGlasses();
-    }else{
-      switch(currentExpression){
-        case 'happy':drawEyesHappy();drawMouthHappy();drawBlush();break;
-        case 'sad':drawEyesSad();drawMouthSad();break;
-        case 'eating':drawEyesHappy();drawMouthEating();break;
-        case 'love':drawEyesHappy();drawMouthHappy();drawBlush();break;
-        default:drawEyesNormal();drawMouthNormal();
-      }
-    }
-    if(state.activeAccessory&&state.activeAccessory!=='glasses'){
-      const fn=accessoryDrawFns[state.activeAccessory];
-      if(fn)fn();
+    switch(currentExpression){
+      case 'eating':stateClass='cat-state-eat';imgSrc=catImages.eat;break;
+      case 'playing':stateClass='cat-state-play';imgSrc=catImages.play;break;
+      case 'coding':stateClass='cat-state-code';imgSrc=catImages.normal;break;
+      case 'sad':stateClass='cat-state-sad';imgSrc=catImages.normal;break;
+      case 'happy':stateClass='cat-state-happy';imgSrc=catImages.normal;break;
+      case 'love':stateClass='cat-state-love';imgSrc=catImages.normal;break;
+      default:stateClass='cat-state-normal';imgSrc=catImages.normal;
     }
   }
+  if(catImgEl.src.indexOf(imgSrc)===-1)catImgEl.src=imgSrc;
+  const newClass='cat-img-container '+stateClass;
+  if(prev!==newClass){
+    catContainer.className=newClass;
+    if(stateClass==='cat-state-code')startTermTyping();
+    else stopTermTyping();
+  }
+  // Accessory overlay
+  if(state.activeAccessory){
+    const items=[{id:'crown',icon:'👑'},{id:'bowtie',icon:'🎀'},{id:'glasses',icon:'🤓'},{id:'scarf',icon:'🧣'},{id:'partyhat',icon:'🎉'},{id:'wizardhat',icon:'🧙'},{id:'flower',icon:'🌸'},{id:'halo',icon:'😇'}];
+    const acc=items.find(a=>a.id===state.activeAccessory);
+    if(acc){catAccEl.textContent=acc.icon;catAccEl.style.display='block';}
+    else catAccEl.style.display='none';
+  }else{catAccEl.style.display='none';}
 }
 
-setInterval(()=>{tailFrame++;renderCat();},500);
+function startTermTyping(){
+  const el=termBody;
+  el.innerHTML='';
+  let line=0;
+  codeTypingInterval=setInterval(()=>{
+    if(line>=4){stopTermTyping();return;}
+    const txt=termLines[Math.floor(Math.random()*termLines.length)];
+    el.innerHTML+=txt+'<br>';
+    if(line===3)el.innerHTML+='<span class="cursor">█</span>';
+    line++;
+  },500);
+}
+function stopTermTyping(){if(codeTypingInterval){clearInterval(codeTypingInterval);codeTypingInterval=null;}}
+
+renderCat();
 
 // ===================== SOUND SYSTEM =====================
 let audioCtx=null;
@@ -549,7 +513,7 @@ function updateLevel(){
 }
 function updateExpression(){
   if(state.sleeping){currentExpression='sleepy';return;}
-  if(currentExpression==='eating'||currentExpression==='love')return;
+  if(currentExpression==='eating'||currentExpression==='love'||currentExpression==='playing'||currentExpression==='coding')return;
   if(state.happy>70)currentExpression='happy';
   else if(state.happy<30||state.hunger<20)currentExpression='sad';
   else currentExpression='normal';
@@ -592,7 +556,6 @@ const achievementDefs=[
   {id:'first_feed',icon:'🐟',name:'初次投喂',desc:'第一次喂猫咪',check:s=>s.feedCount>=1},
   {id:'feed_master',icon:'🍣',name:'美食家',desc:'喂食 20 次',check:s=>s.feedCount>=20},
   {id:'best_friend',icon:'💕',name:'亲密好友',desc:'亲密度达到 100',check:s=>s.love>=100},
-  {id:'play_10',icon:'🧶',name:'玩耍达人',desc:'玩耍 10 次',check:s=>s.playCount>=10},
   {id:'code_20',icon:'💻',name:'代码高手',desc:'编程 20 次',check:s=>s.codeCount>=20},
   {id:'rich',icon:'💰',name:'小富翁',desc:'累计获得 500 金币',check:s=>s.totalCoins>=500},
   {id:'mega_rich',icon:'👑',name:'百万富翁',desc:'累计获得 2000 金币',check:s=>s.totalCoins>=2000},
@@ -733,7 +696,9 @@ function play(){doAction(()=>{
   state.happy=clamp(state.happy+20);state.energy=clamp(state.energy-15);state.hunger=clamp(state.hunger-8);
   state.love=clamp(state.love+5);state.exp+=5;state.playCount++;
   addCoins(3);
-  floatEmoji('🧶');floatEmoji('⭐');animatePet('wiggle');showThought(rnd(thoughts.happy));setMood('猫咪追着毛线球玩得不亦乐乎！🧶');
+  currentExpression='playing';renderCat();
+  setTimeout(()=>{if(currentExpression==='playing'){currentExpression='normal';updateExpression();renderCat();}},2500);
+  floatEmoji('🧶');floatEmoji('⭐');animatePet('wiggle');showThought(rnd(thoughts.happy));setMood('猫咪和包子鸭玩得不亦乐乎！🧶');
   addDiary('🧶 和猫咪玩毛线球，好开心！');playMeow();
 });}
 
@@ -773,6 +738,8 @@ function code(){doAction(()=>{
   state.energy=clamp(state.energy-10);state.happy=clamp(state.happy+10);state.hunger=clamp(state.hunger-5);
   state.love=clamp(state.love+3);state.exp+=8;state.codeCount++;
   addCoins(5);
+  currentExpression='coding';renderCat();
+  setTimeout(()=>{if(currentExpression==='coding'){currentExpression='normal';updateExpression();renderCat();}},3000);
   floatEmoji('💻');floatEmoji('✨');animatePet('bounce');showThought(rnd(thoughts.code));setMood('猫咪在键盘上疯狂踩踩！代码质量 MAX！');
   addDiary('💻 猫咪帮忙写代码，产出爆表！');playMeow();
 });}
