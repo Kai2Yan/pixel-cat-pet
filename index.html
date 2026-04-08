@@ -88,7 +88,7 @@ body{
 .term-body{padding:5px 7px;color:#4fc3f7;font-size:9px;line-height:1.5;min-height:45px;}
 .term-body .cursor{animation:term-blink 1s step-end infinite;}
 
-.cat-accessory-overlay{position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:28px;z-index:5;display:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));pointer-events:none;}
+.cat-accessory-overlay{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:24px;z-index:5;display:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));pointer-events:none;transition:top .3s ease,left .3s ease;}
 
 .thought-bubble{position:absolute;top:-40px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.95);color:#333;padding:8px 14px;border-radius:4px;font-size:14px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.2);border:2px solid #333;font-family:'Courier New',monospace;z-index:20;}
 .thought-bubble.show{opacity:1;transform:translateX(-50%) translateY(-8px);}
@@ -423,11 +423,17 @@ function renderCat(){
     if(stateClass==='cat-state-code')startTermTyping();
     else stopTermTyping();
   }
-  // Accessory overlay
+  // Accessory overlay — position per state
   if(state.activeAccessory){
     const items=[{id:'crown',icon:'👑'},{id:'bowtie',icon:'🎀'},{id:'glasses',icon:'🤓'},{id:'scarf',icon:'🧣'},{id:'partyhat',icon:'🎉'},{id:'wizardhat',icon:'🧙'},{id:'flower',icon:'🌸'},{id:'halo',icon:'😇'}];
     const acc=items.find(a=>a.id===state.activeAccessory);
-    if(acc){catAccEl.textContent=acc.icon;catAccEl.style.display='block';}
+    if(acc){
+      catAccEl.textContent=acc.icon;catAccEl.style.display='block';
+      const posMap={normal:[0,50],happy:[0,50],love:[0,50],sad:[0,50],coding:[0,50],eating:[-2,50],sleepy:[8,38],playing:[55,65]};
+      const key=state.sleeping?'sleepy':currentExpression;
+      const pos=posMap[key]||posMap.normal;
+      catAccEl.style.top=pos[0]+'px';catAccEl.style.left=pos[1]+'%';
+    }
     else catAccEl.style.display='none';
   }else{catAccEl.style.display='none';}
 }
