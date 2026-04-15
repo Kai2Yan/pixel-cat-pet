@@ -332,9 +332,16 @@ const catImgEl=document.getElementById('catImg');
 const catContainer=document.getElementById('catContainer');
 const termBody=document.getElementById('termBody');
 const catAccEl=document.getElementById('catAccessory');
-const catImages={normal:'cat_normal.png',sleep:'cat_sleep.png',eat:'cat_eat.png',play:'cat_play.png'};
+const catImages={normal:'cat_normal.png',sleep:'cat_sleep.png',eat:'cat_eat.png',play:'cat_play.png',lick:'cat_lick.png',curious:'cat_curious.png',box:'cat_box.png',chase:'cat_chase.png',watch:'cat_watch.png'};
+function isBoxUnlocked(){return state&&state.level>=8;}
+function getIdleImages(){
+  const imgs=[catImages.normal,catImages.curious];
+  if(isBoxUnlocked())imgs.push(catImages.box);
+  return imgs;
+}
+let idleImgIdx=0;
 const termLines=['$ git commit -m "喵"','print("hello 喵!")','import 小鱼干','0 errors ✓','$ npm run 撸猫','> compiling 鱼.js...','cat README.md 🐱','sudo apt install 猫粮'];
-new Image().src=catImages.sleep;new Image().src=catImages.eat;new Image().src=catImages.play;
+Object.values(catImages).forEach(src=>{new Image().src=src;});
 
 // (old canvas drawing functions removed — using images now)
 
@@ -387,12 +394,14 @@ loadState();
 
 const levelNames=['小奶猫','调皮猫','好伙伴','代码猫','黑客猫','编程大师','猫中之王','传说喵神'];
 const thoughts={
-  hungry:['喵...好饿...🐟','想吃小鱼干...','肚子咕咕叫了喵~'],
-  sad:['喵呜...无聊...','想你陪我玩~','今天不开心喵'],
+  hungry:['喵...好饿...🐟','想吃小鱼干...','肚子咕咕叫了喵~','那条鱼好好吃的样子...','盯着鱼缸看...🐠'],
+  sad:['喵呜...无聊...','想你陪我玩~','今天不开心喵','鱼...鱼在那边...🐟'],
   tired:['好困喵...💤','打哈欠~','想睡觉了喵...'],
-  happy:['喵~好开心！','呼噜呼噜~ ❤️','蹭蹭~','最喜欢你了喵！'],
+  happy:['喵~好开心！','呼噜呼噜~ ❤️','蹭蹭~','最喜欢你了喵！','这个箱子好舒服喵~📦'],
   code:['print("喵!")','git commit -m "喵"','import 小鱼干','正在debug喵...','0 bugs 喵！'],
-  idle:['喵?','...盯...','舔毛中~','(打哈欠)','喵呜~♪','蹭~蹭~']
+  play:['抓到老鼠了！🐭','追追追～','跑不掉了喵！⭐','看我的猫猫拳！'],
+  love:['呼噜呼噜~ 好舒服...','继续摸喵~','舔舔毛~整理下 💕','蹭蹭你的手~'],
+  idle:['喵?','...盯...','舔毛中~','(打哈欠)','喵呜~♪','蹭~蹭~','这个箱子不错喵📦','好奇地东张西望~']
 };
 
 // ===================== RENDER CAT =====================
@@ -408,12 +417,12 @@ function renderCat(){
   }else{
     switch(currentExpression){
       case 'eating':stateClass='cat-state-eat';imgSrc=catImages.eat;break;
-      case 'playing':stateClass='cat-state-play';imgSrc=catImages.play;break;
+      case 'playing':stateClass='cat-state-play';imgSrc=catImages.chase;break;
       case 'coding':stateClass='cat-state-code';imgSrc=catImages.normal;break;
-      case 'sad':stateClass='cat-state-sad';imgSrc=catImages.normal;break;
-      case 'happy':stateClass='cat-state-happy';imgSrc=catImages.normal;break;
-      case 'love':stateClass='cat-state-love';imgSrc=catImages.normal;break;
-      default:stateClass='cat-state-normal';imgSrc=catImages.normal;
+      case 'sad':stateClass='cat-state-sad';imgSrc=catImages.watch;break;
+      case 'happy':stateClass='cat-state-happy';imgSrc=isBoxUnlocked()?catImages.box:catImages.normal;break;
+      case 'love':stateClass='cat-state-love';imgSrc=catImages.lick;break;
+      default:stateClass='cat-state-normal';const idles=getIdleImages();imgSrc=idles[idleImgIdx%idles.length];
     }
   }
   if(catImgEl.src.indexOf(imgSrc)===-1)catImgEl.src=imgSrc;
@@ -429,9 +438,15 @@ function renderCat(){
     const acc=items.find(a=>a.id===state.activeAccessory);
     if(acc){
       catAccEl.textContent=acc.icon;catAccEl.style.display='block';
-      const posMap={normal:[0,50],happy:[0,50],love:[0,50],sad:[0,50],coding:[0,50],eating:[-2,50],sleepy:[8,38],playing:[55,65]};
+      const posMap={normal:[0,50],happy:[-5,50],love:[5,45],sad:[18,38],coding:[0,50],eating:[-2,50],sleepy:[8,38],playing:[10,35]};
       const key=state.sleeping?'sleepy':currentExpression;
-      const pos=posMap[key]||posMap.normal;
+      let pos=posMap[key]||posMap.normal;
+      if(key==='normal'){
+        const idles=getIdleImages();
+        const idleImg=idles[idleImgIdx%idles.length];
+        if(idleImg===catImages.curious)pos=[0,40];
+        else if(idleImg===catImages.box)pos=[-5,50];
+      }
       catAccEl.style.top=pos[0]+'px';catAccEl.style.left=pos[1]+'%';
     }
     else catAccEl.style.display='none';
@@ -540,7 +555,13 @@ function updateBars(){
 }
 function updateLevel(){
   const nl=Math.min(Math.floor(state.exp/50)+1,levelNames.length);
-  if(nl>state.level){showToast(`🎉 升级到 Lv.${nl} ${levelNames[nl-1]}！`,'achieve');playAchieve();}
+  if(nl>state.level){
+    showToast(`🎉 升级到 Lv.${nl} ${levelNames[nl-1]}！`,'achieve');playAchieve();
+    if(nl>=8){
+      setTimeout(()=>{showToast('📦 解锁隐藏皮肤「大胖丁の箱子」！','achieve');playAchieve();},1500);
+      addDiary('📦 达到 Lv.8 传说喵神，解锁了隐藏皮肤「大胖丁の箱子」！');
+    }
+  }
   state.level=nl;
   document.getElementById('levelBadge').textContent=`Lv.${nl} ${levelNames[nl-1]}`;
 }
@@ -593,6 +614,7 @@ const achievementDefs=[
   {id:'rich',icon:'💰',name:'小富翁',desc:'累计获得 500 金币',check:s=>s.totalCoins>=500},
   {id:'mega_rich',icon:'👑',name:'百万富翁',desc:'累计获得 2000 金币',check:s=>s.totalCoins>=2000},
   {id:'max_level',icon:'🌟',name:'猫中之王',desc:'达到最高等级',check:s=>s.level>=levelNames.length},
+  {id:'box_skin',icon:'📦',name:'大胖丁の箱子',desc:'达到 Lv.8 解锁隐藏皮肤',check:s=>s.level>=8},
   {id:'collector',icon:'🎭',name:'收藏家',desc:'购买所有配饰',check:s=>s.ownedAccessories.length>=8},
   {id:'game_50',icon:'🎮',name:'捕鱼达人',desc:'小游戏得分 50+',check:s=>s.gameHighScore>=50},
   {id:'streak_7',icon:'🔥',name:'全勤猫奴',desc:'连续访问 7 天',check:s=>s.streak>=7},
@@ -731,8 +753,8 @@ function play(){doAction(()=>{
   addCoins(3);
   currentExpression='playing';renderCat();
   setTimeout(()=>{if(currentExpression==='playing'){currentExpression='normal';updateExpression();renderCat();}},2500);
-  floatEmoji('🧶');floatEmoji('⭐');animatePet('wiggle');showThought(rnd(thoughts.happy));setMood('猫咪和包子鸭玩得不亦乐乎！🧶');
-  addDiary('🧶 和猫咪玩毛线球，好开心！');playMeow();
+  floatEmoji('🐭');floatEmoji('⭐');animatePet('wiggle');showThought(rnd(thoughts.play));setMood('猫咪在追老鼠！跑得飞快！🐭');
+  addDiary('🐭 猫咪追老鼠玩，兴奋极了！');playMeow();
 });}
 
 function sleep(){doAction(()=>{
@@ -760,9 +782,9 @@ function pet(){doAction(()=>{
   currentExpression='love';renderCat();
   setTimeout(()=>{if(currentExpression==='love'){currentExpression='normal';updateExpression();renderCat();}},2000);
   floatEmoji('❤️');animatePet('wiggle');
-  showThought(rnd(['呼噜呼噜~ ❤️','蹭蹭...😊','再摸摸喵~','最喜欢你了喵！']));
-  setMood('猫咪开心地呼噜呼噜~ 💕');
-  addDiary('🤗 撸了撸猫咪，它开心地呼噜~');playPurr();
+  showThought(rnd(thoughts.love));
+  setMood('猫咪舒服地舔舔毛，呼噜呼噜~ 💕');
+  addDiary('🤗 撸了撸猫咪，它舒服地舔舔毛~');playPurr();
 });}
 
 function code(){doAction(()=>{
@@ -981,6 +1003,9 @@ setInterval(()=>{
   else if(state.energy<20){showThought(rnd(thoughts.tired));setMood('猫咪累了，让它休息一下吧~ 💤');}
   else if(state.happy<30){showThought(rnd(thoughts.sad));setMood('猫咪不太开心，陪它玩玩吧~');}
   else{showThought(rnd(thoughts.idle));}
+  if(currentExpression==='normal'||currentExpression==='happy'){
+    idleImgIdx=(idleImgIdx+1)%getIdleImages().length;renderCat();
+  }
 },12000);
 
 setInterval(randomWeather,120000);
